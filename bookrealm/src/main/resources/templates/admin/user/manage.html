@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layout}" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.w3.org/1999/xhtml">
+<meta name="_csrf" th:content="${_csrf.token}">
+<meta name="_csrf_header" th:content="${_csrf.headerName}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<!-- Bootstrap CSS -->
+<link rel="stylesheet"
+	href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+	integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk"
+	crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+	rel="stylesheet">
+<link href="starter-template.css" rel="stylesheet">
+
+<title>Book Realm</title>
+<style>
+.container {
+	max-width: 1000px;
+	margin: 0 auto; 
+}
+</style> 
+<body>
+<!--<div align="center">
+    <h1>회원 관리</h1>
+    <br />
+    <form th:action="@{/admin/member/edit}" method="post">
+
+        <table border="0" cellpadding="10">
+            <tr>
+                <td>이름: </td>
+                <td><input type="text" name="username" th:value="${member.username}" readonly/></td>
+            </tr>
+            <tr>
+                <td>아이디: </td>
+                <td><input type="text" name="email" th:value="${member.email}" readonly/></td>
+            </tr>
+            <tr>
+                <td>관리자 권한</td>
+                <td><input type="text" name="role" th:value="${member.role}" /></td>
+            </tr>
+            <tr>
+                <td>우편번호: </td>
+                <td><input type="text" name="postcode" th:value="${member.address.postcode}" readonly/></td>
+            </tr>
+            <tr>
+                <td>주소: </td>
+                <td><div th:text="|${member.address.address} ${member.address.extraAddress} ${member.address.detailAddress}|"></div></td>
+            </tr>
+        </table>
+    </form>
+</div>-->
+<nav th:replace="~{admin/navbar-admin.html :: navbarFragment-admin}"></nav>
+<div class="container mt-5">
+    <h2 style="font-weight:bold; ">회원 관리</h2>
+
+    <div class="row mt-4">
+        <div class="col-md-6" style="margin-top: 30px;">
+            <h4>회원 기본 정보</h4>
+            <p style="margin-top: 20px;"><strong>이름 :</strong> <span th:text="${member.username}"></span></p>
+            <p><strong>이메일 :</strong> <span th:text="${member.email}"></span></p>
+            <p><strong>우편번호 :</strong> <span th:text="${member.address.postcode}"></span></p>
+            <p><strong>주소 :</strong> <span th:text="|${member.address.address} ${member.address.extraAddress} ${member.address.detailAddress}|"></span></p>
+            <p class="form-inline">
+                <strong style="margin-right: 10px;">관리자 권한</strong>
+                <span>
+                    <select id="selectRole" name="selectRole" class="form-control">
+                        <option th:each="role : ${roles}" th:value="${role}" th:text="${role.getValue()}" th:selected="${role} == ${member.role}">
+                    </select>
+                </span>
+            </p>
+        </div>
+
+        <div class="col-md-6" style="margin-top: 30px;">
+            <h4>주문 내역</h4>
+
+            <table border="1">
+
+                <tr>
+                    <th width="5%"></th>
+                    <th width="50%">주소</th>
+                    <th width="20%">총액</th>
+                    <th width="5%">결제수단</th>
+                    <th width="20%">결제일자</th>
+                </tr>
+
+                <tr th:each="order: ${orders}" th:onclick="|location.href='@{/admin/member/orders(orderId=${order.id})}'|"> <!--th:onclick="|location.href='@{/admin/book/manage/edit(id=${book.id})}'|"-->
+                    <td th:text="${order.id}"></td>
+                    <td th:text="${order.destination.address} + ' ' + ${order.destination.detailAddress} + ' ' + ${order.destination.extraAddress}"></td>
+                    <td th:text="${order.totalAmount}"></td>
+                    <td th:text="${order.payment}" style="font-size: 12px" ></td>
+                    <td th:text="${order.orderDate}"></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+<script src="http://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script th:inline="javascript">
+    var prev_val;
+    $("#selectRole").focus(function() {
+        prev_val = $(this).val();
+    }).change(function (){
+        if(confirm("권한을 변경하시겠습니까?")) {
+            //console.log([[${#authentication.principal.username}]])
+            if([[${member.email}]] === [[${#authentication.principal.username}]]){
+                alert("본인 권한은 변경할 수 없습니다.")
+            }
+            else{
+                $.ajax({
+                    type : "POST",
+                    url : "/admin/member/role",
+                    data : {
+                        "role" : $(this).val(),
+                        "id": [[${member.id}]]
+                    },
+                    beforeSend: function (jqXHR, settings) {
+                        var header = $("meta[name='_csrf_header']").attr("content");
+                        var token = $("meta[name='_csrf']").attr("content");
+                        jqXHR.setRequestHeader(header, token);
+                    },
+                    success : function(data) {
+                        alert("권한이 수정되었습니다.");
+                        location.reload();
+                    },
+                    error : function(e) {
+                        $(this).val(prev_val);
+                        alert("수정 실패");
+                    }
+                });
+            }
+        }
+        else{
+            $(this).val(prev_val);
+            return false;
+        }
+    });
+
+</script>
+</head>
+</html>

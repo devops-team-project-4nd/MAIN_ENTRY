@@ -1,0 +1,45 @@
+spring:
+  sql:
+    init:
+      platform: mariadb
+      encoding: UTF-8
+      mode: always
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://localhost:3306/bookrealm
+    username: root
+    password: maria
+  thymeleaf:
+    cache: false
+  resources:
+    chain:
+      strategy:
+        content:
+          enabled: true
+  mvc:
+    tatic-path-pattern: /static/**
+  #JPA
+  jpa:
+    hibernate:
+      ddl-auto: update
+    generate-ddl: false
+    show-sql: true
+  # private yml import
+  profiles:
+    include: private
+
+  security:
+    oauth2:
+      resourceserver:
+
+#jwt
+jwt:
+  token:
+    secret: "secretKey"
+
+
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: debug
