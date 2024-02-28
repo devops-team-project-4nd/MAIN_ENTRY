@@ -3,7 +3,10 @@
 ### wbs
 
 ### app server
-
+```
+cd target
+java -jar bookrealm-0.0.1-SNAPSHOT.jar
+```
 
 ### db
 
